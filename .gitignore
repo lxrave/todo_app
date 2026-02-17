@@ -13,7 +13,9 @@ npm-debug.log*
 .env
 .env.*
 
-# IDE
+# IDE / tooling
+.cursor/
+.specify/
 .vscode/
 .idea/
 *.swp
