@@ -82,4 +82,29 @@ describe('todoStore', () => {
     store.loadTasks()
     expect(store.tasks).toHaveLength(0)
   })
+
+  it('deleteTask removes task and persists', () => {
+    const store = useTodoStore()
+    store.loadTasks()
+    store.addTask('To delete')
+    store.addTask('To keep')
+    const idToDelete = store.tasks[0].id
+    expect(store.tasks).toHaveLength(2)
+
+    store.deleteTask(idToDelete)
+    expect(store.tasks).toHaveLength(1)
+    expect(store.tasks[0].text).toBe('To keep')
+    expect(localStorage.setItem).toHaveBeenCalled()
+  })
+
+  it('deleteTask is no-op when id not found', () => {
+    const store = useTodoStore()
+    store.loadTasks()
+    store.addTask('Only task')
+    const before = store.tasks.length
+
+    store.deleteTask('non-existent-id')
+    expect(store.tasks).toHaveLength(before)
+    expect(store.tasks[0].text).toBe('Only task')
+  })
 })
