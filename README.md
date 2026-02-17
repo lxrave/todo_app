@@ -26,6 +26,12 @@ npm run preview
 npm run test
 npm run test:watch
 
+# E2E (Playwright, headless)
+npm run test:e2e              # Playwright сам поднимет dev-сервер
+npm run test:e2e:local        # против уже запущенного приложения (npm run dev в другом терминале)
+# Один раз перед первым E2E: npm run playwright:install
+# Подробнее: specs/002-todo-e2e-headless/quickstart.md
+
 # Линтинг и форматирование
 npm run lint
 npm run format
@@ -41,3 +47,25 @@ npm run format
 4. **Перетаскивание** — смена порядка задач; порядок сохраняется после перезагрузки.
 
 Подробные сценарии: `specs/001-todo-list/quickstart.md`.
+
+## E2E-проверки
+
+Автоматические сценарии (добавление, переключение, персистентность) в headless Chrome.
+
+**Перед первым запуском E2E** обязательно установите браузер (иначе будет ошибка «Executable doesn't exist»):
+
+```bash
+npx playwright install
+# или
+npm run playwright:install
+```
+
+**Полный цикл (запуск приложения и тесты сам):**
+
+1. Один раз установить браузер: `npm run playwright:install`
+2. Запустить приложение: `npm run dev` (оставить работать)
+3. В другом терминале: `npm run test:e2e:local`
+
+Либо один запуск (Playwright сам поднимет сервер): `npm run test:e2e`.
+
+Подробнее: [specs/002-todo-e2e-headless/quickstart.md](specs/002-todo-e2e-headless/quickstart.md)
