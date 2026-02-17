@@ -84,4 +84,24 @@ export class TodoAppPage {
   async getPriorityForTask(text: string): Promise<string> {
     return await this.getPriorityButtonForTask(text).textContent() ?? ''
   }
+
+  /** Delete button (trash icon) for the task with given text. Per specs/004-task-delete/contracts/e2e-selectors.md */
+  getDeleteButtonForTask(taskText: string): Locator {
+    return this.getTaskByText(taskText).getByRole('button', { name: 'Удалить задачу' })
+  }
+
+  /** Confirm delete dialog (role="dialog"). */
+  getConfirmDeleteDialog(): Locator {
+    return this.page.getByRole('dialog')
+  }
+
+  /** Click "Удалить" in the confirm delete dialog. */
+  async clickConfirmDelete(): Promise<void> {
+    await this.getConfirmDeleteDialog().getByRole('button', { name: 'Удалить' }).click()
+  }
+
+  /** Click "Отмена" in the confirm delete dialog. */
+  async clickCancelDelete(): Promise<void> {
+    await this.getConfirmDeleteDialog().getByRole('button', { name: 'Отмена' }).click()
+  }
 }

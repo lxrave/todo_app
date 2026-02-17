@@ -132,5 +132,12 @@ export const useTodoStore = defineStore('todo', {
       this.tasks = [...this.tasks]
       saveToStorage(this.tasks)
     },
+
+    deleteTask(id: string): void {
+      const index = this.tasks.findIndex((t) => t.id === id)
+      if (index === -1) return
+      this.tasks.splice(index, 1)
+      saveToStorage(this.tasks)
+    },
   },
 })
