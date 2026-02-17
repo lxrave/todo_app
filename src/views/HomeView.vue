@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import TaskForm from '@/components/TaskForm.vue'
 import TaskList from '@/components/TaskList.vue'
-import { useTodoStore } from '@/stores/todoStore'
-
-const store = useTodoStore()
 </script>
 
 <template>
   <div class="home">
     <h1>Задачи</h1>
     <TaskForm />
-    <TaskList :tasks="store.sortedTasks" />
+    <TaskList />
   </div>
 </template>
 

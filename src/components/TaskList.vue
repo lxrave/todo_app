@@ -1,59 +1,103 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import type { Task } from '@/types/task'
+import type { TaskPriority } from '@/types/task'
 import { useTodoStore } from '@/stores/todoStore'
 import TaskItem from './TaskItem.vue'
 import { VueDraggableNext } from 'vue-draggable-next'
 
-const props = defineProps<{
-  tasks: Task[]
-}>()
-
 const store = useTodoStore()
-const list = ref<Task[]>([...props.tasks])
+
+const hasTasks = computed(() => store.tasks.length > 0)
+
+const highList = ref<Task[]>([...store.tasksByPriorityHigh])
+const mediumList = ref<Task[]>([...store.tasksByPriorityMedium])
+const lowList = ref<Task[]>([...store.tasksByPriorityLow])
+
+function syncFromStore(): void {
+  highList.value = [...store.tasksByPriorityHigh]
+  mediumList.value = [...store.tasksByPriorityMedium]
+  lowList.value = [...store.tasksByPriorityLow]
+}
 
 watch(
-  () => props.tasks,
-  (tasks) => {
-    list.value = [...tasks]
-  },
-  { deep: true, flush: 'sync', immediate: true }
+  () => [store.tasksByPriorityHigh, store.tasksByPriorityMedium, store.tasksByPriorityLow],
+  () => syncFromStore(),
+  { deep: true, flush: 'sync' }
 )
 
-function onDragEnd(ev: { oldIndex?: number; newIndex?: number }): void {
+function onDragEnd(priority: TaskPriority, ev: { oldIndex?: number; newIndex?: number }): void {
   const oldIndex = ev.oldIndex ?? 0
   const newIndex = ev.newIndex ?? 0
-  store.reorderTasks(oldIndex, newIndex)
-  list.value = [...store.sortedTasks]
+  store.reorderTasksInGroup(priority, oldIndex, newIndex)
+  syncFromStore()
 }
 </script>
 
 <template>
   <div class="task-list">
-    <div v-if="tasks.length === 0" class="empty-state">
+    <div v-if="!hasTasks" class="empty-state">
       Нет задач. Добавьте первую.
     </div>
-    <VueDraggableNext
-      v-else
-      v-model="list"
-      tag="ul"
-      class="list"
-      item-key="id"
-      @end="onDragEnd"
-    >
-      <TaskItem
-        v-for="element in list"
-        :key="element.id"
-        :task="element"
-        @toggle="store.toggleTask(element.id)"
-      />
-    </VueDraggableNext>
+    <template v-else>
+      <section v-if="highList.length" class="priority-group">
+        <VueDraggableNext
+          v-model="highList"
+          tag="ul"
+          class="list"
+          item-key="id"
+          @end="(ev) => onDragEnd('High', ev)"
+        >
+          <TaskItem
+            v-for="element in highList"
+            :key="element.id"
+            :task="element"
+            @toggle="store.toggleTask(element.id)"
+          />
+        </VueDraggableNext>
+      </section>
+      <section v-if="mediumList.length" class="priority-group">
+        <VueDraggableNext
+          v-model="mediumList"
+          tag="ul"
+          class="list"
+          item-key="id"
+          @end="(ev) => onDragEnd('Medium', ev)"
+        >
+          <TaskItem
+            v-for="element in mediumList"
+            :key="element.id"
+            :task="element"
+            @toggle="store.toggleTask(element.id)"
+          />
+        </VueDraggableNext>
+      </section>
+      <section v-if="lowList.length" class="priority-group">
+        <VueDraggableNext
+          v-model="lowList"
+          tag="ul"
+          class="list"
+          item-key="id"
+          @end="(ev) => onDragEnd('Low', ev)"
+        >
+          <TaskItem
+            v-for="element in lowList"
+            :key="element.id"
+            :task="element"
+            @toggle="store.toggleTask(element.id)"
+          />
+        </VueDraggableNext>
+      </section>
+    </template>
   </div>
 </template>
 
 <style scoped>
 .task-list {
   margin-top: 0.5rem;
+}
+.priority-group {
+  margin-bottom: 0.25rem;
 }
 .list {
   list-style: none;

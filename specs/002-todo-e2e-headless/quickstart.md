@@ -7,25 +7,17 @@
 
 ## Запуск E2E
 
-**Вариант A — приложение уже запущено** (удобно для отладки: сначала тесты, потом правки):
+Сервер приложения **не запускается** Playwright. Сначала подними приложение, затем запусти тесты:
 
 ```bash
 # Терминал 1
 npm run dev
 
 # Терминал 2 — тесты в headless Chrome против http://localhost:5173
-npm run test:e2e:local
-```
-
-Сервер при этом не поднимается Playwright; тесты идут против уже работающего приложения. Если приложение на другом порту: `PLAYWRIGHT_BASE_URL=http://localhost:5175 npm run test:e2e:local`.
-
-**Вариант B — Playwright сам поднимает сервер** (например, в CI):
-
-```bash
 npm run test:e2e
 ```
 
-При первом запуске Playwright поднимет dev-сервер (Vite) по настройке `webServer` в `playwright.config.ts`.
+Если приложение на другом порту: `PLAYWRIGHT_BASE_URL=http://localhost:5175 npm run test:e2e`.
 
 ## Что проверяется
 

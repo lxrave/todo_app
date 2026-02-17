@@ -5,6 +5,8 @@ Auto-generated from all feature plans. Last updated: 2026-02-16
 ## Active Technologies
 - TypeScript 5.x (как в проекте) + Playwright (e2e), существующие Vue 3, Vite, Pinia (приложение под тестами) (002-todo-e2e-headless)
 - Тесты не хранят данные; проверяют приложение, использующее localStorage (ключ `todo-app-tasks`) (002-todo-e2e-headless)
+- TypeScript 5.x (как в проекте) + Vue 3, Vite, Pinia, vue-draggable-next, sortablejs (существующие) (003-task-priority)
+- localStorage (тот же ключ `todo-app-tasks`; структура Task расширяется полем `priority`) (003-task-priority)
 
 - TypeScript 5.x + Vue 3, Vite, Pinia, VueUse (по необходимости) (001-todo-list)
 
@@ -24,9 +26,15 @@ npm test && npm run lint
 TypeScript 5.x: Follow standard conventions
 
 ## Recent Changes
+- 003-task-priority: Added TypeScript 5.x (как в проекте) + Vue 3, Vite, Pinia, vue-draggable-next, sortablejs (существующие)
 - 002-todo-e2e-headless: Added TypeScript 5.x (как в проекте) + Playwright (e2e), существующие Vue 3, Vite, Pinia (приложение под тестами)
 
 - 001-todo-list: Added TypeScript 5.x + Vue 3, Vite, Pinia, VueUse (по необходимости)
 
 <!-- MANUAL ADDITIONS START -->
+## E2E в чате агента
+Тесты в чате агента часто **вообще не выполняются** (не падают — не запускаются). Варианты:
+1. Запуск с сетью: `npm run test:e2e` с `required_permissions: ['network']`.
+2. Если не помогло — с отключением песочницы: `required_permissions: ['all']` (нужно одобрение пользователя).
+3. Обход: пользователь вручную запускает `npm run dev` в терминале; агент запускает `npm run test:e2e` с `required_permissions: ['network']` — тесты подключаются к уже запущенному приложению.
 <!-- MANUAL ADDITIONS END -->
