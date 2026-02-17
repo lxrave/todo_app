@@ -26,9 +26,8 @@ npm run preview
 npm run test
 npm run test:watch
 
-# E2E (Playwright, headless)
-npm run test:e2e              # Playwright сам поднимет dev-сервер
-npm run test:e2e:local        # против уже запущенного приложения (npm run dev в другом терминале)
+# E2E (Playwright, headless). Сначала запусти приложение: npm run dev
+npm run test:e2e
 # Один раз перед первым E2E: npm run playwright:install
 # Подробнее: specs/002-todo-e2e-headless/quickstart.md
 
@@ -60,12 +59,12 @@ npx playwright install
 npm run playwright:install
 ```
 
-**Полный цикл (запуск приложения и тесты сам):**
+**Цикл запуска:**
 
 1. Один раз установить браузер: `npm run playwright:install`
 2. Запустить приложение: `npm run dev` (оставить работать)
-3. В другом терминале: `npm run test:e2e:local`
+3. В другом терминале: `npm run test:e2e`
 
-Либо один запуск (Playwright сам поднимет сервер): `npm run test:e2e`.
+**В чате агента / песочнице** тесты могут не выполняться. Варианты: (1) запускать e2e с разрешением на сеть (`network`); (2) при необходимости — с отключением песочницы (`all`); (3) поднять приложение вручную (`npm run dev`) и в агенте запускать `npm run test:e2e`.
 
 Подробнее: [specs/002-todo-e2e-headless/quickstart.md](specs/002-todo-e2e-headless/quickstart.md)

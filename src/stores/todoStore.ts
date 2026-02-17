@@ -1,5 +1,11 @@
 import { defineStore } from 'pinia'
 import type { Task } from '@/types/task'
+import {
+  DEFAULT_PRIORITY,
+  normalizePriority,
+  PRIORITY_ORDER,
+  type TaskPriority,
+} from '@/types/task'
 
 const STORAGE_KEY = 'todo-app-tasks'
 
@@ -9,7 +15,13 @@ function loadFromStorage(): Task[] {
     if (raw == null) return []
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed)) return []
-    return parsed
+    return parsed.map((t: Record<string, unknown>) => ({
+      id: t.id,
+      text: t.text,
+      completed: Boolean(t.completed),
+      order: Number(t.order) ?? 0,
+      priority: normalizePriority(t.priority),
+    })) as Task[]
   } catch {
     return []
   }
@@ -28,14 +40,32 @@ function nextOrder(tasks: Task[]): number {
   return Math.max(...tasks.map((t) => t.order), 0) + 1
 }
 
+function tasksWithPriority(tasks: Task[], priority: TaskPriority): Task[] {
+  return [...tasks].filter((t) => t.priority === priority).sort((a, b) => a.order - b.order)
+}
+
 export const useTodoStore = defineStore('todo', {
   state: () => ({
     tasks: loadFromStorage() as Task[],
   }),
 
   getters: {
+    /** Задачи, отсортированные по приоритету (High → Medium → Low), затем по order внутри группы. */
     sortedTasks(state): Task[] {
-      return [...state.tasks].sort((a, b) => a.order - b.order)
+      const byPriority = PRIORITY_ORDER.flatMap((p) => tasksWithPriority(state.tasks, p))
+      return byPriority
+    },
+
+    tasksByPriorityHigh(state): Task[] {
+      return tasksWithPriority(state.tasks, 'High')
+    },
+
+    tasksByPriorityMedium(state): Task[] {
+      return tasksWithPriority(state.tasks, 'Medium')
+    },
+
+    tasksByPriorityLow(state): Task[] {
+      return tasksWithPriority(state.tasks, 'Low')
     },
   },
 
@@ -53,6 +83,7 @@ export const useTodoStore = defineStore('todo', {
         text: trimmed,
         completed: false,
         order,
+        priority: DEFAULT_PRIORITY,
       }
       this.tasks.push(task)
       saveToStorage(this.tasks)
@@ -65,6 +96,19 @@ export const useTodoStore = defineStore('todo', {
       saveToStorage(this.tasks)
     },
 
+    setPriority(id: string, priority: TaskPriority): void {
+      const valid: TaskPriority[] = ['Low', 'Medium', 'High']
+      if (!valid.includes(priority)) return
+      const task = this.tasks.find((t) => t.id === id)
+      if (!task) return
+      const samePriority = this.tasks.filter((t) => t.priority === priority)
+      const maxOrder =
+        samePriority.length === 0 ? 0 : Math.max(...samePriority.map((t) => t.order), 0)
+      task.priority = priority
+      task.order = maxOrder + 1
+      saveToStorage(this.tasks)
+    },
+
     reorderTasks(fromIndex: number, toIndex: number): void {
       const sorted = [...this.tasks].sort((a, b) => a.order - b.order)
       const [removed] = sorted.splice(fromIndex, 1)
@@ -74,6 +118,18 @@ export const useTodoStore = defineStore('todo', {
         t.order = i
       })
       this.tasks = sorted
+      saveToStorage(this.tasks)
+    },
+
+    reorderTasksInGroup(priority: TaskPriority, fromIndex: number, toIndex: number): void {
+      const group = tasksWithPriority(this.tasks, priority)
+      const [removed] = group.splice(fromIndex, 1)
+      if (!removed) return
+      group.splice(toIndex, 0, removed)
+      group.forEach((t, i) => {
+        t.order = i
+      })
+      this.tasks = [...this.tasks]
       saveToStorage(this.tasks)
     },
   },

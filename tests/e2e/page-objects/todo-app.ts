@@ -24,11 +24,12 @@ export class TodoAppPage {
   }
 
   getTaskListItems(): Locator {
-    return this.page.getByRole('listitem')
+    return this.page.locator('.task-item')
   }
 
+  /** Task row: .task-item is the card (li); avoids matching dropdown option li. */
   getTaskByText(text: string): Locator {
-    return this.page.getByRole('listitem').filter({ hasText: text })
+    return this.page.locator('.task-item').filter({ hasText: text })
   }
 
   getCheckboxForTask(text: string): Locator {
@@ -49,5 +50,38 @@ export class TodoAppPage {
   /** Whether the task is shown as completed (checkbox checked). */
   async isTaskCompleted(text: string): Promise<boolean> {
     return await this.getCheckboxForTask(text).isChecked()
+  }
+
+  /** Priority button: кнопка в .priority-wrap внутри карточки. */
+  getPriorityButtonForTask(text: string): Locator {
+    return this.getTaskByText(text).locator('.priority-wrap button')
+  }
+
+  /** Open priority dropdown for the task with given text (ждёт появления кнопки). */
+  async openPriorityDropdownForTask(text: string): Promise<void> {
+    const btn = this.getPriorityButtonForTask(text)
+    await btn.waitFor({ state: 'visible', timeout: 10_000 })
+    await btn.click()
+  }
+
+  /** Visible listbox (priority dropdown). Use after opening a dropdown. */
+  get priorityListbox(): Locator {
+    return this.page.getByRole('listbox', { name: /Выберите приоритет/ })
+  }
+
+  /** Select priority in the open dropdown (Low, Medium, High). */
+  async selectPriorityInDropdown(priority: 'Low' | 'Medium' | 'High'): Promise<void> {
+    await this.page.getByRole('option', { name: priority }).click()
+  }
+
+  /** Set priority for task: open dropdown and select value. */
+  async setPriorityForTask(taskText: string, priority: 'Low' | 'Medium' | 'High'): Promise<void> {
+    await this.openPriorityDropdownForTask(taskText)
+    await this.selectPriorityInDropdown(priority)
+  }
+
+  /** Current priority label for task (text of the priority button). */
+  async getPriorityForTask(text: string): Promise<string> {
+    return await this.getPriorityButtonForTask(text).textContent() ?? ''
   }
 }
